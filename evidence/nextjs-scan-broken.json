@@ -1,0 +1,36 @@
+{
+  "policy_set": "broken",
+  "generated_at": "2026-10-29T10:39:59+00:00",
+  "postgres": "16.15 (Debian 16.15-1.pgdg13+2)",
+  "target": "examples/nextjs-broken",
+  "findings": [
+    {
+      "rule": "NX1",
+      "level": "FAIL",
+      "file": ".env.example",
+      "line": 4,
+      "detail": "NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY is inlined into the browser bundle"
+    },
+    {
+      "rule": "NX1",
+      "level": "FAIL",
+      "file": "lib/supabase.ts",
+      "line": 11,
+      "detail": "NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY is inlined into the browser bundle"
+    },
+    {
+      "rule": "NX3",
+      "level": "REVIEW",
+      "file": "app/api/invoices/route.ts",
+      "line": null,
+      "detail": "server code uses the service role key via lib/supabase.ts, reads request input and never calls auth.getUser(): who is the caller, and which tenant?"
+    },
+    {
+      "rule": "NX2",
+      "level": "FAIL",
+      "file": "app/dashboard/invoices/page.tsx",
+      "line": null,
+      "detail": "client component uses the service role key via lib/supabase.ts"
+    }
+  ]
+}

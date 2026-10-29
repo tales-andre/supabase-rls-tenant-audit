@@ -1,0 +1,103 @@
+{
+  "policy_set": "broken",
+  "generated_at": "2026-10-29T10:39:59+00:00",
+  "postgres": "16.15 (Debian 16.15-1.pgdg13+2)",
+  "findings": [
+    {
+      "level": "FAIL",
+      "check_name": "function_executable_by_anon",
+      "object": "public.get_org_invoices(p_org_id uuid)",
+      "detail": "logged-out visitors can call this function through the API"
+    },
+    {
+      "level": "FAIL",
+      "check_name": "policy_always_true",
+      "object": "public.invoices / \"Users can update invoices of their org\"",
+      "detail": "UPDATE policy with WITH CHECK (true)"
+    },
+    {
+      "level": "FAIL",
+      "check_name": "policy_always_true",
+      "object": "public.projects / \"Enable read access for all users\"",
+      "detail": "SELECT policy with USING (true), applies to every role including anon"
+    },
+    {
+      "level": "FAIL",
+      "check_name": "policy_checks_login_not_tenant",
+      "object": "public.invoices / \"Users can create invoices\"",
+      "detail": "INSERT policy only checks that the caller is logged in: (auth.uid() IS NOT NULL)"
+    },
+    {
+      "level": "FAIL",
+      "check_name": "policy_checks_login_not_tenant",
+      "object": "public.projects / \"Enable update for authenticated users only\"",
+      "detail": "UPDATE policy only checks that the caller is logged in: (auth.role() = 'authenticated'::text)"
+    },
+    {
+      "level": "FAIL",
+      "check_name": "policy_trusts_user_metadata",
+      "object": "public.customers / \"Org members can view customers\"",
+      "detail": "reads user_metadata from the JWT; users can edit it with auth.updateUser()"
+    },
+    {
+      "level": "FAIL",
+      "check_name": "security_definer_in_exposed_schema",
+      "object": "public.get_org_invoices(p_org_id uuid)",
+      "detail": "SECURITY DEFINER callable through the API; runs as postgres and skips RLS; search_path not set"
+    },
+    {
+      "level": "FAIL",
+      "check_name": "table_without_rls",
+      "object": "public.integration_secrets",
+      "detail": "RLS is disabled; with Supabase default grants the anon key can read and write it"
+    },
+    {
+      "level": "FAIL",
+      "check_name": "view_without_security_invoker",
+      "object": "public.invoice_summary",
+      "detail": "view runs as its owner (postgres), so RLS on the tables it reads is skipped"
+    },
+    {
+      "level": "REVIEW",
+      "check_name": "policy_without_tenant_reference",
+      "object": "public.memberships / \"Users can join organizations\"",
+      "detail": "INSERT policy does not mention org_id or a membership helper: (user_id = auth.uid())"
+    },
+    {
+      "level": "REVIEW",
+      "check_name": "policy_without_tenant_reference",
+      "object": "public.memberships / \"Users can view their memberships\"",
+      "detail": "SELECT policy does not mention org_id or a membership helper: (user_id = auth.uid())"
+    },
+    {
+      "level": "REVIEW",
+      "check_name": "policy_without_tenant_reference",
+      "object": "public.profiles / \"Users can update own profile\"",
+      "detail": "UPDATE policy does not mention org_id or a membership helper: (id = auth.uid()) (id = auth.uid())"
+    },
+    {
+      "level": "REVIEW",
+      "check_name": "policy_without_tenant_reference",
+      "object": "public.profiles / \"Users can view own profile\"",
+      "detail": "SELECT policy does not mention org_id or a membership helper: (id = auth.uid())"
+    },
+    {
+      "level": "REVIEW",
+      "check_name": "policy_without_tenant_reference",
+      "object": "public.projects / \"Admins can delete projects\"",
+      "detail": "DELETE policy does not mention org_id or a membership helper: (EXISTS ( SELECT 1\n   FROM memberships m\n  WHERE ((m.user_id = auth.uid()) AND (m.role = 'admin'::text))))"
+    },
+    {
+      "level": "REVIEW",
+      "check_name": "policy_without_tenant_reference",
+      "object": "storage.objects / \"Authenticated users can read invoice PDFs\"",
+      "detail": "SELECT policy does not mention org_id or a membership helper: (bucket_id = 'invoice-pdfs'::text)"
+    },
+    {
+      "level": "REVIEW",
+      "check_name": "policy_without_tenant_reference",
+      "object": "storage.objects / \"Authenticated users can upload invoice PDFs\"",
+      "detail": "INSERT policy does not mention org_id or a membership helper: (bucket_id = 'invoice-pdfs'::text)"
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Cover</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; width: 1600px; height: 1200px; background: #eef1f5; font-family: 'Segoe UI', system-ui, sans-serif; color: #17202b; }
+  header { background: #0f2f4a; color: #fff; padding: 56px 80px 50px; }
+  h1 { margin: 0; font-size: 76px; line-height: 1.08; letter-spacing: -0.5px; }
+  .sub { padding: 40px 80px 10px; font-size: 34px; color: #33404f; line-height: 1.35; }
+  table { margin: 22px 80px 0; width: 1440px; border-collapse: separate; border-spacing: 0 16px; font-size: 34px; }
+  th { text-align: left; font-size: 26px; text-transform: uppercase; letter-spacing: 1px; color: #5a6878; padding: 0 28px; }
+  td { background: #fff; padding: 24px 28px; border-top: 2px solid #d3dae2; border-bottom: 2px solid #d3dae2; }
+  td:first-child { border-left: 2px solid #d3dae2; border-radius: 12px 0 0 12px; font-weight: 600; }
+  td:last-child { border-right: 2px solid #d3dae2; border-radius: 0 12px 12px 0; }
+  .b { display: inline-block; min-width: 190px; text-align: center; padding: 8px 18px; border-radius: 8px; font-weight: 700; font-size: 30px; }
+  .leak { background: #c62828; color: #fff; }
+  .ok { background: #2e7d32; color: #fff; }
+  footer { position: absolute; bottom: 44px; left: 80px; font-size: 28px; color: #4a5767; }
+</style></head>
+<body>
+<header><h1>Can tenant A read tenant B's data?</h1></header>
+<div class="sub">Tenant-isolation review for AI-built Next.js + Supabase apps:
+attack tests as a real user, broken vs. fixed policies, risk-ranked report.</div>
+<table>
+  <tr><th style="width:62%">What an attacker tries</th><th>AI-written</th><th>Fixed</th></tr>
+  <tr><td>Read another tenant's rows via a "true" policy</td><td><span class="b leak">LEAKS</span></td><td><span class="b ok">BLOCKED</span></td></tr>
+  <tr><td>Edit own profile to switch tenant</td><td><span class="b leak">LEAKS</span></td><td><span class="b ok">BLOCKED</span></td></tr>
+  <tr><td>Add yourself as admin of another tenant</td><td><span class="b leak">LEAKS</span></td><td><span class="b ok">BLOCKED</span></td></tr>
+  <tr><td>Call a SECURITY DEFINER function while logged out</td><td><span class="b leak">LEAKS</span></td><td><span class="b ok">BLOCKED</span></td></tr>
+  <tr><td>Use the service key shipped to the browser</td><td><span class="b leak">EXPOSED</span></td><td><span class="b ok">SERVER-ONLY</span></td></tr>
+</table>
+<footer>github.com/tales-andre/supabase-rls-tenant-audit &nbsp;·&nbsp; Postgres in Docker, scripted, raw evidence</footer>
+</body></html>

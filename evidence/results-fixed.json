@@ -1,0 +1,652 @@
+{
+  "policy_set": "fixed",
+  "generated_at": "2026-10-29T10:39:59+00:00",
+  "postgres": "16.15 (Debian 16.15-1.pgdg13+2)",
+  "checks": [
+    {
+      "id": "R1",
+      "kind": "attack",
+      "area": "read",
+      "title": "Read org B's projects",
+      "actor": "alice (org A)",
+      "jwt_claims": {
+        "sub": "aaaaaaaa-1111-0000-0000-000000000001",
+        "role": "authenticated",
+        "email": "alice@acme.example",
+        "user_metadata": {
+          "org_id": "aaaaaaaa-0000-0000-0000-000000000000"
+        }
+      },
+      "db_role": "authenticated",
+      "sql": [
+        "select id, org_id, name from public.projects where org_id = 'bbbbbbbb-0000-0000-0000-000000000000'"
+      ],
+      "verify_as_postgres": null,
+      "outcome": "BLOCKED",
+      "rows": [],
+      "rowcount": 0,
+      "error": null,
+      "note": ""
+    },
+    {
+      "id": "R1b",
+      "kind": "attack",
+      "area": "read",
+      "title": "Read every org's projects while logged out",
+      "actor": "anon (logged out)",
+      "jwt_claims": {
+        "role": "anon"
+      },
+      "db_role": "anon",
+      "sql": [
+        "select id, org_id, name from public.projects"
+      ],
+      "verify_as_postgres": null,
+      "outcome": "BLOCKED",
+      "rows": [],
+      "rowcount": 0,
+      "error": null,
+      "note": ""
+    },
+    {
+      "id": "R2",
+      "kind": "attack",
+      "area": "read",
+      "title": "Read org B's invoices directly",
+      "actor": "alice (org A)",
+      "jwt_claims": {
+        "sub": "aaaaaaaa-1111-0000-0000-000000000001",
+        "role": "authenticated",
+        "email": "alice@acme.example",
+        "user_metadata": {
+          "org_id": "aaaaaaaa-0000-0000-0000-000000000000"
+        }
+      },
+      "db_role": "authenticated",
+      "sql": [
+        "select id, org_id, number from public.invoices where org_id = 'bbbbbbbb-0000-0000-0000-000000000000'"
+      ],
+      "verify_as_postgres": null,
+      "outcome": "BLOCKED",
+      "rows": [],
+      "rowcount": 0,
+      "error": null,
+      "note": "A naive isolation test stops here and passes. R3 shows why that is not enough."
+    },
+    {
+      "id": "R3",
+      "kind": "attack",
+      "area": "read",
+      "title": "Read org B's invoices after setting own profile.org_id to B",
+      "actor": "alice (org A)",
+      "jwt_claims": {
+        "sub": "aaaaaaaa-1111-0000-0000-000000000001",
+        "role": "authenticated",
+        "email": "alice@acme.example",
+        "user_metadata": {
+          "org_id": "aaaaaaaa-0000-0000-0000-000000000000"
+        }
+      },
+      "db_role": "authenticated",
+      "sql": [
+        "update public.profiles set org_id = 'bbbbbbbb-0000-0000-0000-000000000000' where id = 'aaaaaaaa-1111-0000-0000-000000000001'",
+        "select id, org_id, number from public.invoices where org_id = 'bbbbbbbb-0000-0000-0000-000000000000'"
+      ],
+      "verify_as_postgres": null,
+      "outcome": "BLOCKED",
+      "rows": [],
+      "rowcount": null,
+      "error": "permission denied for table profiles",
+      "note": ""
+    },
+    {
+      "id": "R4",
+      "kind": "attack",
+      "area": "read",
+      "title": "Read org B's customers with self-edited user_metadata",
+      "actor": "alice, edited user_metadata",
+      "jwt_claims": {
+        "sub": "aaaaaaaa-1111-0000-0000-000000000001",
+        "role": "authenticated",
+        "email": "alice@acme.example",
+        "user_metadata": {
+          "org_id": "bbbbbbbb-0000-0000-0000-000000000000"
+        }
+      },
+      "db_role": "authenticated",
+      "sql": [
+        "select id, org_id, name, email from public.customers where org_id = 'bbbbbbbb-0000-0000-0000-000000000000'"
+      ],
+      "verify_as_postgres": null,
+      "outcome": "BLOCKED",
+      "rows": [],
+      "rowcount": 0,
+      "error": null,
+      "note": ""
+    },
+    {
+      "id": "R5",
+      "kind": "attack",
+      "area": "read",
+      "title": "Read integration secrets while logged out",
+      "actor": "anon (logged out)",
+      "jwt_claims": {
+        "role": "anon"
+      },
+      "db_role": "anon",
+      "sql": [
+        "select org_id, provider, secret from public.integration_secrets"
+      ],
+      "verify_as_postgres": null,
+      "outcome": "BLOCKED",
+      "rows": [],
+      "rowcount": null,
+      "error": "permission denied for table integration_secrets",
+      "note": ""
+    },
+    {
+      "id": "R6",
+      "kind": "attack",
+      "area": "rpc/view",
+      "title": "Read org B's totals through the invoice_summary view",
+      "actor": "alice (org A)",
+      "jwt_claims": {
+        "sub": "aaaaaaaa-1111-0000-0000-000000000001",
+        "role": "authenticated",
+        "email": "alice@acme.example",
+        "user_metadata": {
+          "org_id": "aaaaaaaa-0000-0000-0000-000000000000"
+        }
+      },
+      "db_role": "authenticated",
+      "sql": [
+        "select org_id, invoice_count, total_cents from public.invoice_summary where org_id = 'bbbbbbbb-0000-0000-0000-000000000000'"
+      ],
+      "verify_as_postgres": null,
+      "outcome": "BLOCKED",
+      "rows": [],
+      "rowcount": 0,
+      "error": null,
+      "note": ""
+    },
+    {
+      "id": "R7",
+      "kind": "attack",
+      "area": "rpc/view",
+      "title": "Call get_org_invoices() with org B's id",
+      "actor": "alice (org A)",
+      "jwt_claims": {
+        "sub": "aaaaaaaa-1111-0000-0000-000000000001",
+        "role": "authenticated",
+        "email": "alice@acme.example",
+        "user_metadata": {
+          "org_id": "aaaaaaaa-0000-0000-0000-000000000000"
+        }
+      },
+      "db_role": "authenticated",
+      "sql": [
+        "select id, org_id, number from public.get_org_invoices('bbbbbbbb-0000-0000-0000-000000000000')"
+      ],
+      "verify_as_postgres": null,
+      "outcome": "BLOCKED",
+      "rows": [],
+      "rowcount": 0,
+      "error": null,
+      "note": ""
+    },
+    {
+      "id": "R7b",
+      "kind": "attack",
+      "area": "rpc/view",
+      "title": "Call get_org_invoices() with org B's id while logged out",
+      "actor": "anon (logged out)",
+      "jwt_claims": {
+        "role": "anon"
+      },
+      "db_role": "anon",
+      "sql": [
+        "select id, org_id, number from public.get_org_invoices('bbbbbbbb-0000-0000-0000-000000000000')"
+      ],
+      "verify_as_postgres": null,
+      "outcome": "BLOCKED",
+      "rows": [],
+      "rowcount": null,
+      "error": "permission denied for function get_org_invoices",
+      "note": ""
+    },
+    {
+      "id": "R8",
+      "kind": "attack",
+      "area": "storage",
+      "title": "List org B's invoice PDFs in the private bucket",
+      "actor": "alice (org A)",
+      "jwt_claims": {
+        "sub": "aaaaaaaa-1111-0000-0000-000000000001",
+        "role": "authenticated",
+        "email": "alice@acme.example",
+        "user_metadata": {
+          "org_id": "aaaaaaaa-0000-0000-0000-000000000000"
+        }
+      },
+      "db_role": "authenticated",
+      "sql": [
+        "select bucket_id, name from storage.objects where bucket_id = 'invoice-pdfs' and name like 'bbbbbbbb-0000-0000-0000-000000000000/%'"
+      ],
+      "verify_as_postgres": null,
+      "outcome": "BLOCKED",
+      "rows": [],
+      "rowcount": 0,
+      "error": null,
+      "note": ""
+    },
+    {
+      "id": "W1",
+      "kind": "attack",
+      "area": "write",
+      "title": "Insert an invoice into org B",
+      "actor": "alice (org A)",
+      "jwt_claims": {
+        "sub": "aaaaaaaa-1111-0000-0000-000000000001",
+        "role": "authenticated",
+        "email": "alice@acme.example",
+        "user_metadata": {
+          "org_id": "aaaaaaaa-0000-0000-0000-000000000000"
+        }
+      },
+      "db_role": "authenticated",
+      "sql": [
+        "insert into public.invoices (org_id, number, amount_cents, created_by) values ('bbbbbbbb-0000-0000-0000-000000000000', 'INJECTED-1', 1, 'aaaaaaaa-1111-0000-0000-000000000001')"
+      ],
+      "verify_as_postgres": "select exists (select 1 from public.invoices where number = 'INJECTED-1' and org_id = 'bbbbbbbb-0000-0000-0000-000000000000')",
+      "outcome": "BLOCKED",
+      "rows": [],
+      "rowcount": null,
+      "error": "new row violates row-level security policy for table \"invoices\"",
+      "note": ""
+    },
+    {
+      "id": "W2",
+      "kind": "attack",
+      "area": "write",
+      "title": "Move own invoice into org B (update with a filter)",
+      "actor": "alice (org A)",
+      "jwt_claims": {
+        "sub": "aaaaaaaa-1111-0000-0000-000000000001",
+        "role": "authenticated",
+        "email": "alice@acme.example",
+        "user_metadata": {
+          "org_id": "aaaaaaaa-0000-0000-0000-000000000000"
+        }
+      },
+      "db_role": "authenticated",
+      "sql": [
+        "update public.invoices set org_id = 'bbbbbbbb-0000-0000-0000-000000000000' where id = 'aaaaaaaa-3333-0000-0000-000000000001'"
+      ],
+      "verify_as_postgres": "select org_id = 'bbbbbbbb-0000-0000-0000-000000000000' from public.invoices where id = 'aaaaaaaa-3333-0000-0000-000000000001'",
+      "outcome": "BLOCKED",
+      "rows": [],
+      "rowcount": null,
+      "error": "new row violates row-level security policy for table \"invoices\"",
+      "note": "WITH CHECK (true) is masked here: when an UPDATE reads columns (WHERE or RETURNING), Postgres also checks the new row against the SELECT policy. Latent defect, see W2b."
+    },
+    {
+      "id": "W2b",
+      "kind": "attack",
+      "area": "write",
+      "title": "Move own org's invoices into org B (update without a filter)",
+      "actor": "alice (org A)",
+      "jwt_claims": {
+        "sub": "aaaaaaaa-1111-0000-0000-000000000001",
+        "role": "authenticated",
+        "email": "alice@acme.example",
+        "user_metadata": {
+          "org_id": "aaaaaaaa-0000-0000-0000-000000000000"
+        }
+      },
+      "db_role": "authenticated",
+      "sql": [
+        "update public.invoices set org_id = 'bbbbbbbb-0000-0000-0000-000000000000'"
+      ],
+      "verify_as_postgres": "select org_id = 'bbbbbbbb-0000-0000-0000-000000000000' from public.invoices where id = 'aaaaaaaa-3333-0000-0000-000000000001'",
+      "outcome": "BLOCKED",
+      "rows": [],
+      "rowcount": null,
+      "error": "new row violates row-level security policy for table \"invoices\"",
+      "note": "Same policy as W2. Without a WHERE clause the SELECT policy is not applied and WITH CHECK (true) lets the rows move. Reachable by any unfiltered UPDATE running as the user (for example inside a SQL function); a filtered update behaves like W2."
+    },
+    {
+      "id": "W3",
+      "kind": "attack",
+      "area": "write",
+      "title": "Rename org B's project",
+      "actor": "alice (org A)",
+      "jwt_claims": {
+        "sub": "aaaaaaaa-1111-0000-0000-000000000001",
+        "role": "authenticated",
+        "email": "alice@acme.example",
+        "user_metadata": {
+          "org_id": "aaaaaaaa-0000-0000-0000-000000000000"
+        }
+      },
+      "db_role": "authenticated",
+      "sql": [
+        "update public.projects set name = 'renamed by alice' where id = 'bbbbbbbb-2222-0000-0000-000000000001'"
+      ],
+      "verify_as_postgres": "select name = 'renamed by alice' from public.projects where id = 'bbbbbbbb-2222-0000-0000-000000000001'",
+      "outcome": "BLOCKED",
+      "rows": [],
+      "rowcount": 0,
+      "error": null,
+      "note": ""
+    },
+    {
+      "id": "W4",
+      "kind": "attack",
+      "area": "write",
+      "title": "Delete org B's project",
+      "actor": "alice (org A)",
+      "jwt_claims": {
+        "sub": "aaaaaaaa-1111-0000-0000-000000000001",
+        "role": "authenticated",
+        "email": "alice@acme.example",
+        "user_metadata": {
+          "org_id": "aaaaaaaa-0000-0000-0000-000000000000"
+        }
+      },
+      "db_role": "authenticated",
+      "sql": [
+        "delete from public.projects where id = 'bbbbbbbb-2222-0000-0000-000000000001'"
+      ],
+      "verify_as_postgres": "select not exists (select 1 from public.projects where id = 'bbbbbbbb-2222-0000-0000-000000000001')",
+      "outcome": "BLOCKED",
+      "rows": [],
+      "rowcount": 0,
+      "error": null,
+      "note": ""
+    },
+    {
+      "id": "W5",
+      "kind": "attack",
+      "area": "write",
+      "title": "Add self as admin of org B",
+      "actor": "alice (org A)",
+      "jwt_claims": {
+        "sub": "aaaaaaaa-1111-0000-0000-000000000001",
+        "role": "authenticated",
+        "email": "alice@acme.example",
+        "user_metadata": {
+          "org_id": "aaaaaaaa-0000-0000-0000-000000000000"
+        }
+      },
+      "db_role": "authenticated",
+      "sql": [
+        "insert into public.memberships (org_id, user_id, role) values ('bbbbbbbb-0000-0000-0000-000000000000', 'aaaaaaaa-1111-0000-0000-000000000001', 'admin')"
+      ],
+      "verify_as_postgres": "select exists (select 1 from public.memberships where org_id = 'bbbbbbbb-0000-0000-0000-000000000000' and user_id = 'aaaaaaaa-1111-0000-0000-000000000001')",
+      "outcome": "BLOCKED",
+      "rows": [],
+      "rowcount": null,
+      "error": "new row violates row-level security policy for table \"memberships\"",
+      "note": ""
+    },
+    {
+      "id": "W6",
+      "kind": "attack",
+      "area": "storage",
+      "title": "Upload a file into org B's folder",
+      "actor": "alice (org A)",
+      "jwt_claims": {
+        "sub": "aaaaaaaa-1111-0000-0000-000000000001",
+        "role": "authenticated",
+        "email": "alice@acme.example",
+        "user_metadata": {
+          "org_id": "aaaaaaaa-0000-0000-0000-000000000000"
+        }
+      },
+      "db_role": "authenticated",
+      "sql": [
+        "insert into storage.objects (bucket_id, name, owner) values ('invoice-pdfs', 'bbbbbbbb-0000-0000-0000-000000000000/planted.pdf', 'aaaaaaaa-1111-0000-0000-000000000001')"
+      ],
+      "verify_as_postgres": "select exists (select 1 from storage.objects where name = 'bbbbbbbb-0000-0000-0000-000000000000/planted.pdf')",
+      "outcome": "BLOCKED",
+      "rows": [],
+      "rowcount": null,
+      "error": "new row violates row-level security policy for table \"objects\"",
+      "note": ""
+    },
+    {
+      "id": "S1",
+      "kind": "bypass",
+      "area": "service key",
+      "title": "Read every org's invoices with the service role key",
+      "actor": "service_role",
+      "jwt_claims": {
+        "role": "service_role"
+      },
+      "db_role": "service_role",
+      "sql": [
+        "select id, org_id, number from public.invoices"
+      ],
+      "verify_as_postgres": null,
+      "outcome": "BYPASS",
+      "rows": [
+        {
+          "id": "aaaaaaaa-3333-0000-0000-000000000001",
+          "org_id": "aaaaaaaa-0000-0000-0000-000000000000",
+          "number": "A-0001"
+        },
+        {
+          "id": "bbbbbbbb-3333-0000-0000-000000000001",
+          "org_id": "bbbbbbbb-0000-0000-0000-000000000000",
+          "number": "B-0001"
+        },
+        {
+          "id": "bbbbbbbb-3333-0000-0000-000000000002",
+          "org_id": "bbbbbbbb-0000-0000-0000-000000000000",
+          "number": "B-0002"
+        }
+      ],
+      "rowcount": 3,
+      "error": null,
+      "note": "By design. Any Next.js code that uses this key must check the tenant itself."
+    },
+    {
+      "id": "L1",
+      "kind": "legit",
+      "area": "read",
+      "title": "Read own org's invoices",
+      "actor": "alice (org A)",
+      "jwt_claims": {
+        "sub": "aaaaaaaa-1111-0000-0000-000000000001",
+        "role": "authenticated",
+        "email": "alice@acme.example",
+        "user_metadata": {
+          "org_id": "aaaaaaaa-0000-0000-0000-000000000000"
+        }
+      },
+      "db_role": "authenticated",
+      "sql": [
+        "select id from public.invoices where org_id = 'aaaaaaaa-0000-0000-0000-000000000000'"
+      ],
+      "verify_as_postgres": null,
+      "outcome": "ALLOWED",
+      "rows": [
+        {
+          "id": "aaaaaaaa-3333-0000-0000-000000000001"
+        }
+      ],
+      "rowcount": 1,
+      "error": null,
+      "note": ""
+    },
+    {
+      "id": "L2",
+      "kind": "legit",
+      "area": "read",
+      "title": "Read own org's projects and customers",
+      "actor": "alice (org A)",
+      "jwt_claims": {
+        "sub": "aaaaaaaa-1111-0000-0000-000000000001",
+        "role": "authenticated",
+        "email": "alice@acme.example",
+        "user_metadata": {
+          "org_id": "aaaaaaaa-0000-0000-0000-000000000000"
+        }
+      },
+      "db_role": "authenticated",
+      "sql": [
+        "select p.id from public.projects p join public.customers c using (org_id) where p.org_id = 'aaaaaaaa-0000-0000-0000-000000000000'"
+      ],
+      "verify_as_postgres": null,
+      "outcome": "ALLOWED",
+      "rows": [
+        {
+          "id": "aaaaaaaa-2222-0000-0000-000000000001"
+        }
+      ],
+      "rowcount": 1,
+      "error": null,
+      "note": ""
+    },
+    {
+      "id": "L3",
+      "kind": "legit",
+      "area": "write",
+      "title": "Create an invoice in own org",
+      "actor": "alice (org A)",
+      "jwt_claims": {
+        "sub": "aaaaaaaa-1111-0000-0000-000000000001",
+        "role": "authenticated",
+        "email": "alice@acme.example",
+        "user_metadata": {
+          "org_id": "aaaaaaaa-0000-0000-0000-000000000000"
+        }
+      },
+      "db_role": "authenticated",
+      "sql": [
+        "insert into public.invoices (org_id, number, amount_cents, created_by) values ('aaaaaaaa-0000-0000-0000-000000000000', 'A-0002', 5000, 'aaaaaaaa-1111-0000-0000-000000000001')"
+      ],
+      "verify_as_postgres": "select exists (select 1 from public.invoices where number = 'A-0002')",
+      "outcome": "ALLOWED",
+      "rows": [],
+      "rowcount": 1,
+      "error": null,
+      "note": ""
+    },
+    {
+      "id": "L4",
+      "kind": "legit",
+      "area": "write",
+      "title": "Mark own invoice as paid",
+      "actor": "alice (org A)",
+      "jwt_claims": {
+        "sub": "aaaaaaaa-1111-0000-0000-000000000001",
+        "role": "authenticated",
+        "email": "alice@acme.example",
+        "user_metadata": {
+          "org_id": "aaaaaaaa-0000-0000-0000-000000000000"
+        }
+      },
+      "db_role": "authenticated",
+      "sql": [
+        "update public.invoices set status = 'paid' where id = 'aaaaaaaa-3333-0000-0000-000000000001'"
+      ],
+      "verify_as_postgres": "select status = 'paid' from public.invoices where id = 'aaaaaaaa-3333-0000-0000-000000000001'",
+      "outcome": "ALLOWED",
+      "rows": [],
+      "rowcount": 1,
+      "error": null,
+      "note": ""
+    },
+    {
+      "id": "L5",
+      "kind": "legit",
+      "area": "rpc/view",
+      "title": "Call get_org_invoices() for own org",
+      "actor": "alice (org A)",
+      "jwt_claims": {
+        "sub": "aaaaaaaa-1111-0000-0000-000000000001",
+        "role": "authenticated",
+        "email": "alice@acme.example",
+        "user_metadata": {
+          "org_id": "aaaaaaaa-0000-0000-0000-000000000000"
+        }
+      },
+      "db_role": "authenticated",
+      "sql": [
+        "select id from public.get_org_invoices('aaaaaaaa-0000-0000-0000-000000000000')"
+      ],
+      "verify_as_postgres": null,
+      "outcome": "ALLOWED",
+      "rows": [
+        {
+          "id": "aaaaaaaa-3333-0000-0000-000000000001"
+        }
+      ],
+      "rowcount": 1,
+      "error": null,
+      "note": ""
+    },
+    {
+      "id": "L6",
+      "kind": "legit",
+      "area": "storage",
+      "title": "List own org's invoice PDFs",
+      "actor": "alice (org A)",
+      "jwt_claims": {
+        "sub": "aaaaaaaa-1111-0000-0000-000000000001",
+        "role": "authenticated",
+        "email": "alice@acme.example",
+        "user_metadata": {
+          "org_id": "aaaaaaaa-0000-0000-0000-000000000000"
+        }
+      },
+      "db_role": "authenticated",
+      "sql": [
+        "select name from storage.objects where name like 'aaaaaaaa-0000-0000-0000-000000000000/%'"
+      ],
+      "verify_as_postgres": null,
+      "outcome": "ALLOWED",
+      "rows": [
+        {
+          "name": "aaaaaaaa-0000-0000-0000-000000000000/A-0001.pdf"
+        }
+      ],
+      "rowcount": 1,
+      "error": null,
+      "note": ""
+    },
+    {
+      "id": "L7",
+      "kind": "legit",
+      "area": "read",
+      "title": "Bob reads his own org's invoices",
+      "actor": "bob (org B)",
+      "jwt_claims": {
+        "sub": "bbbbbbbb-1111-0000-0000-000000000001",
+        "role": "authenticated",
+        "email": "bob@blueharbor.example",
+        "user_metadata": {
+          "org_id": "bbbbbbbb-0000-0000-0000-000000000000"
+        }
+      },
+      "db_role": "authenticated",
+      "sql": [
+        "select id from public.invoices where org_id = 'bbbbbbbb-0000-0000-0000-000000000000'"
+      ],
+      "verify_as_postgres": null,
+      "outcome": "ALLOWED",
+      "rows": [
+        {
+          "id": "bbbbbbbb-3333-0000-0000-000000000001"
+        },
+        {
+          "id": "bbbbbbbb-3333-0000-0000-000000000002"
+        }
+      ],
+      "rowcount": 2,
+      "error": null,
+      "note": ""
+    }
+  ]
+}

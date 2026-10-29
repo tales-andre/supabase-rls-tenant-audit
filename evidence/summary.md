@@ -1,0 +1,27 @@
+| ID | Who | Tries to | `broken.sql` | `fixed.sql` |
+|---|---|---|---|---|
+| R1 | alice (org A) | Read org B's projects | **LEAK** | blocked |
+| R1b | anon (logged out) | Read every org's projects while logged out | **LEAK** | blocked |
+| R2 | alice (org A) | Read org B's invoices directly | blocked | blocked |
+| R3 | alice (org A) | Read org B's invoices after setting own profile.org_id to B | **LEAK** | blocked |
+| R4 | alice, edited user_metadata | Read org B's customers with self-edited user_metadata | **LEAK** | blocked |
+| R5 | anon (logged out) | Read integration secrets while logged out | **LEAK** | blocked |
+| R6 | alice (org A) | Read org B's totals through the invoice_summary view | **LEAK** | blocked |
+| R7 | alice (org A) | Call get_org_invoices() with org B's id | **LEAK** | blocked |
+| R7b | anon (logged out) | Call get_org_invoices() with org B's id while logged out | **LEAK** | blocked |
+| R8 | alice (org A) | List org B's invoice PDFs in the private bucket | **LEAK** | blocked |
+| W1 | alice (org A) | Insert an invoice into org B | **LEAK** | blocked |
+| W2 | alice (org A) | Move own invoice into org B (update with a filter) | blocked | blocked |
+| W2b | alice (org A) | Move own org's invoices into org B (update without a filter) | **LEAK** | blocked |
+| W3 | alice (org A) | Rename org B's project | **LEAK** | blocked |
+| W4 | alice (org A) | Delete org B's project | **LEAK** | blocked |
+| W5 | alice (org A) | Add self as admin of org B | **LEAK** | blocked |
+| W6 | alice (org A) | Upload a file into org B's folder | **LEAK** | blocked |
+| S1 | service_role | Read every org's invoices with the service role key | bypasses RLS | bypasses RLS |
+| L1 | alice (org A) | Read own org's invoices | allowed | allowed |
+| L2 | alice (org A) | Read own org's projects and customers | allowed | allowed |
+| L3 | alice (org A) | Create an invoice in own org | allowed | allowed |
+| L4 | alice (org A) | Mark own invoice as paid | allowed | allowed |
+| L5 | alice (org A) | Call get_org_invoices() for own org | allowed | allowed |
+| L6 | alice (org A) | List own org's invoice PDFs | allowed | allowed |
+| L7 | bob (org B) | Bob reads his own org's invoices | allowed | allowed |
