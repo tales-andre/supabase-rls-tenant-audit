@@ -12,8 +12,9 @@ tries every cross-tenant path as a real user would. Every result below comes fro
 this repo and the raw output is in [`evidence/`](./evidence/).
 
 - **Attack tests, not opinions.** As user A (and as a logged-out visitor), try to read, insert,
-  update and delete tenant B's rows, call RPCs, read views and list storage files, using only
-  the public anon key and the user's own JWT. App-level checks are skipped on purpose.
+  update and delete tenant B's rows, call RPCs, read views and list storage files, with only
+  the rights the public anon key and the user's own JWT give (set at the database level, the
+  way Supabase's API does; see Limits). App-level checks are skipped on purpose.
 - **Broken vs. fixed, same data.** `policies/broken.sql` and `policies/fixed.sql`. The tests
   assert that the broken set leaks where documented and the fixed set blocks every attempt
   while same-tenant actions keep working.

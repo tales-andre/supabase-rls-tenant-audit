@@ -15,6 +15,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 EVIDENCE = ROOT / "evidence"
 DOCS = ROOT / "docs"
+REPO_URL = "https://github.com/tales-andre/supabase-rls-tenant-audit"
 
 BASE_CSS = """
 body { margin: 0; background: #f4f6f8; font-family: 'Segoe UI', system-ui, sans-serif; color: #1c2430; }
@@ -98,7 +99,9 @@ th { background: #eef1f4; }
 code { font-family: Consolas, monospace; font-size: 9pt; background: #f1f3f5; padding: 0 3px; }
 a { color: #1f5fa8; text-decoration: none; }
 """
+    # Relative evidence links must point at the repo on GitHub in the PDF, not at local files.
     return f"""<!doctype html><html><head><meta charset="utf-8"><title>Sample review report</title>
+<base href="{REPO_URL}/blob/main/report/">
 <style>{css}</style></head><body>{body}</body></html>"""
 
 
