@@ -156,7 +156,7 @@ It needs a superuser (it creates the Supabase roles) and creates and drops the d
 
 - Tested on PostgreSQL 16 (the version is recorded in every evidence file), not against a
   hosted Supabase project. The Supabase parts are emulated: roles, `auth.uid()`/`auth.jwt()`,
-  Supabase's default grants on `public`, and a minimal `storage` schema.
+  the broad grants on `public` that Supabase projects have historically shipped with (check your own project's grants), and a minimal `storage` schema.
 - R4 simulates the token a user gets after editing their own `user_metadata`; the
   `auth.updateUser()` call itself is not run (no Supabase Auth server here).
 - Not tested: public buckets served by URL, signed URLs, Realtime, GraphQL, Edge Functions,
