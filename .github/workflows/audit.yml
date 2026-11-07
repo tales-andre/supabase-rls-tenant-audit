@@ -1,0 +1,40 @@
+name: audit
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  audit:
+    name: Attack matrix and pytest (Postgres 16 in Docker, no cloud account)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Start Postgres 16
+        run: docker compose up -d --wait
+
+      - name: Run the attack matrix, then pytest
+        run: docker compose run --rm audit
+
+      - name: Keep evidence/ from this run
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: evidence
+          path: evidence/
+          if-no-files-found: error
+
+      - name: Stop Postgres
+        if: always()
+        run: docker compose down -v

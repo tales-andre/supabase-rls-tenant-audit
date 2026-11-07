@@ -1,10 +1,10 @@
 # supabase-rls-tenant-audit
 
+[![audit](https://github.com/tales-andre/supabase-rls-tenant-audit/actions/workflows/audit.yml/badge.svg)](https://github.com/tales-andre/supabase-rls-tenant-audit/actions/workflows/audit.yml)
+
 Can tenant A read tenant B's data in your AI-built Supabase app?
 
 > Need this on your own app? Fixed-scope review and fix on Upwork: https://www.upwork.com/services/product/2117770893902192528.
->
-> Versão em português, paga por Pix: https://tales-andre.github.io/raio-x-producao/.
 
 
 *"Our multi-tenant SaaS was written mostly by AI coding agents and never had a senior human
@@ -199,5 +199,6 @@ It needs a superuser (it creates the Supabase roles) and creates and drops the d
 | `report/` | Sample risk-ranked review report (fictional company), Markdown and PDF |
 | `docs/` | Review checklist and screenshots |
 | `examples/` | Next.js excerpts, broken and fixed |
+| `.github/workflows/audit.yml` | CI: the same two Docker Compose commands as the quick start, with `evidence/` kept as a run artifact |
 
 MIT license.
