@@ -4,9 +4,6 @@
 
 Can tenant A read tenant B's data in your AI-built Supabase app?
 
-> Need this on your own app? Fixed-scope review and fix on Upwork: https://www.upwork.com/services/product/2117770893902192528.
-
-
 *"Our multi-tenant SaaS was written mostly by AI coding agents and never had a senior human
 review. Can one customer see another customer's data?"*
 
